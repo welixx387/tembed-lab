@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>T-Embed Lab — установщик</title>
+  <!-- ESP Web Tools: кнопка установки прошивки прямо из браузера -->
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+  <style>
+    :root {
+      --bg: #0a0e14;
+      --panel: #141a24;
+      --accent: #3cdf8a;   /* портально-зелёный */
+      --accent2: #78b4ff;
+      --text: #e8eef5;
+      --muted: #7a8496;
+      --warn: #ff6060;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      background: radial-gradient(1200px 600px at 50% -10%, #10221a 0%, var(--bg) 55%);
+      color: var(--text);
+      font-family: -apple-system, "Segoe UI", Roboto, Ubuntu, sans-serif;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 24px 16px 60px;
+    }
+    .logo {
+      width: 96px; height: 96px; margin: 20px 0 4px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 50% 50%, var(--accent) 0 6px, transparent 7px),
+        repeating-radial-gradient(circle at 50% 50%, transparent 0 8px, rgba(60,223,138,.35) 9px 10px);
+      box-shadow: 0 0 40px rgba(60,223,138,.35);
+    }
+    h1 { font-size: 1.7rem; margin: 8px 0 2px; letter-spacing: .06em; }
+    .sub { color: var(--muted); margin: 0 0 24px; font-size: .95rem; }
+    .card {
+      background: var(--panel);
+      border: 1px solid #223; border-radius: 16px;
+      padding: 24px; max-width: 560px; width: 100%;
+      box-shadow: 0 10px 40px rgba(0,0,0,.4);
+    }
+    .card + .card { margin-top: 18px; }
+    esp-web-install-button { display: block; text-align: center; margin: 8px 0; }
+    esp-web-install-button[install-unsupported] { display: none; }
+    button.ewt {
+      background: var(--accent); color: #06210f; border: none;
+      font-size: 1.05rem; font-weight: 700; padding: 14px 26px;
+      border-radius: 12px; cursor: pointer; letter-spacing: .02em;
+    }
+    button.ewt:hover { filter: brightness(1.08); }
+    .unsupported {
+      display: none; color: var(--warn); text-align: center;
+      padding: 10px; border: 1px dashed var(--warn); border-radius: 10px;
+    }
+    esp-web-install-button[install-unsupported] + .unsupported { display: block; }
+    ol { line-height: 1.7; padding-left: 22px; }
+    li { margin: 4px 0; }
+    .muted { color: var(--muted); font-size: .9rem; }
+    a { color: var(--accent2); }
+    .warn { color: var(--warn); }
+    .badge {
+      display: inline-block; font-size: .72rem; padding: 2px 8px;
+      border-radius: 20px; background: #1d2a22; color: var(--accent);
+      border: 1px solid #2b4638; margin-left: 6px; vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo"></div>
+  <h1>T-EMBED LAB</h1>
+  <p class="sub">Прошивка для LILYGO T-Embed (ESP32-S3)</p>
+
+  <div class="card">
+    <esp-web-install-button manifest="./manifest.json">
+      <button class="ewt" slot="activate">⚡ Установить прошивку</button>
+      <span slot="unsupported"></span>
+    </esp-web-install-button>
+    <div class="unsupported">
+      Ваш браузер не поддерживает установку. Откройте эту страницу в
+      <b>Google Chrome</b> или <b>Microsoft Edge</b> на компьютере.
+    </div>
+    <p class="muted" style="text-align:center; margin-top:14px">
+      Подключите плату кабелем USB-C, нажмите кнопку, выберите COM-порт платы
+      в появившемся окне — и дождитесь окончания записи.
+    </p>
+  </div>
+
+  <div class="card">
+    <b>Как пользоваться</b>
+    <ol>
+      <li>Откройте страницу в <b>Chrome</b> или <b>Edge</b> на ноутбуке/ПК.</li>
+      <li>Подключите T-Embed кабелем <b>USB-C с поддержкой данных</b>.</li>
+      <li>Нажмите <b>«Установить прошивку»</b>.</li>
+      <li>В окне выбора порта выберите порт платы (обычно с надписью
+          <i>USB JTAG</i>, <i>CP210x</i> или <i>CH340</i>).</li>
+      <li>Дождитесь записи и перезагрузки — плата запустится с меню.</li>
+    </ol>
+    <p class="muted">
+      Не находит порт? Зажмите кнопку <b>BOOT</b> на плате, коротко нажмите
+      <b>RST</b> и отпустите BOOT — плата войдёт в режим прошивки.
+      С телефона установка не работает: нужен настольный браузер.
+    </p>
+  </div>
+
+  <p class="muted" style="margin-top:26px; max-width:560px; text-align:center">
+    После установки впишите свою Wi-Fi сеть в исходнике и пересоберите, если
+    нужны «Часы». Прошивка не содержит функций атак — только легальные
+    инструменты. Исходный код — в этом же репозитории.
+  </p>
+</body>
+</html>

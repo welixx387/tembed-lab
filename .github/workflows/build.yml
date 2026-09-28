@@ -1,0 +1,81 @@
+name: Сборка прошивки и публикация установщика
+
+# Запускается при каждом изменении в ветке main и вручную (кнопкой)
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------
+  #  1) КОМПИЛЯЦИЯ прошивки и подготовка единого .bin для установщика
+  # ---------------------------------------------------------------
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Забрать код
+        uses: actions/checkout@v4
+
+      - name: Установить Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Установить ядро ESP32
+        run: |
+          arduino-cli config init --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32@3.0.7
+
+      - name: Установить библиотеки
+        run: |
+          arduino-cli lib install "GFX Library for Arduino"
+          arduino-cli lib install "Adafruit BME280 Library"
+          arduino-cli lib install "Adafruit Unified Sensor"
+
+      - name: Скомпилировать
+        run: |
+          arduino-cli compile \
+            --fqbn "esp32:esp32:esp32s3:PSRAM=opi,FlashSize=16M,CDCOnBoot=cdc,PartitionScheme=default" \
+            --export-binaries \
+            ./TEmbedLab
+
+      - name: Собрать единый образ для ESP Web Tools
+        run: |
+          python -m pip install --upgrade esptool
+          BIN="./TEmbedLab/build/esp32.esp32.esp32s3"
+          BOOT_APP0=$(find ~/.arduino15/packages/esp32/hardware/esp32 -name boot_app0.bin | head -n1)
+          python -m esptool --chip esp32s3 merge_bin \
+            --flash_mode dio --flash_freq 80m --flash_size 16MB \
+            -o ./docs/firmware.bin \
+            0x0     "$BIN/TEmbedLab.ino.bootloader.bin" \
+            0x8000  "$BIN/TEmbedLab.ino.partitions.bin" \
+            0xe000  "$BOOT_APP0" \
+            0x10000 "$BIN/TEmbedLab.ino.bin"
+          ls -la ./docs
+
+      - name: Подготовить артефакт для Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
+
+  # ---------------------------------------------------------------
+  #  2) ПУБЛИКАЦИЯ страницы-установщика на GitHub Pages
+  # ---------------------------------------------------------------
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Опубликовать на GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
