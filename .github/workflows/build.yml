@@ -74,11 +74,6 @@ jobs:
             0x10000 "$BIN/TEmbedLab.ino.bin"
           ls -la ./docs
 
-      - name: Включить и настроить Pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
       - name: Подготовить артефакт для Pages
         uses: actions/upload-pages-artifact@v3
         with:
