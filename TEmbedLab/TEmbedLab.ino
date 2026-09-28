@@ -327,11 +327,16 @@ void drawIcon(uint8_t id, int cx, int cy, uint16_t col) {
       gfx->drawFastVLine(cx, cy - 12, 4, col);
       gfx->drawLine(cx, cy + 1, cx + 3, cy - 4, col);
       break;
-    case 4: // wi-fi
-      for (int r = 4; r <= 12; r += 4)
-        gfx->drawCircleHelper(cx, cy + 6, r, 0x03, col); // верхние дуги
-      gfx->fillCircle(cx, cy + 6, 2, col);
+    case 4: { // wi-fi (дуги рисуем точками — в Arduino_GFX нет drawCircleHelper)
+      int bx = cx, by = cy + 8;
+      for (int r = 5; r <= 13; r += 4)
+        for (int a = 220; a <= 320; a += 5) {
+          float rad = a * 3.14159f / 180.0f;
+          gfx->drawPixel(bx + (int)(cos(rad) * r), by + (int)(sin(rad) * r), col);
+        }
+      gfx->fillCircle(bx, by, 2, col);
       break;
+    }
     case 5: // подсветка (лампочка-RGB)
       gfx->fillCircle(cx, cy - 2, 7, col);
       gfx->fillRect(cx - 3, cy + 5, 6, 4, col);
