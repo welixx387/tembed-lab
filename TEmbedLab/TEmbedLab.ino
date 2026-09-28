@@ -61,19 +61,27 @@ int SCR_W = 320;   // фактические размеры после пово�
 int SCR_H = 170;
 
 // ---------------------------------------------------------------------
+//  Конвертация цвета R,G,B (0..255) в 16-бит 565 — в Arduino_GFX нет
+//  метода color565(), поэтому используем свою функцию.
+// ---------------------------------------------------------------------
+static inline uint16_t C565(uint8_t r, uint8_t g, uint8_t b) {
+  return (uint16_t)(((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3));
+}
+
+// ---------------------------------------------------------------------
 //  ЦВЕТОВАЯ ТЕМА
 // ---------------------------------------------------------------------
 uint16_t C_BG, C_PANEL, C_ACCENT, C_ACCENT2, C_TEXT, C_MUTED, C_WARN, C_OK;
 
 void initTheme() {
-  C_BG      = gfx->color565(9, 12, 18);      // почти чёрный фон
-  C_PANEL   = gfx->color565(22, 27, 38);     // панель/плитка
-  C_ACCENT  = gfx->color565(60, 223, 138);   // портально-зелёный
-  C_ACCENT2 = gfx->color565(120, 180, 255);  // голубой
-  C_TEXT    = gfx->color565(232, 238, 245);  // белый
-  C_MUTED   = gfx->color565(120, 132, 150);  // серый
-  C_WARN    = gfx->color565(255, 96, 96);    // красный
-  C_OK      = gfx->color565(80, 220, 120);   // зелёный
+  C_BG      = C565(9, 12, 18);      // почти чёрный фон
+  C_PANEL   = C565(22, 27, 38);     // панель/плитка
+  C_ACCENT  = C565(60, 223, 138);   // портально-зелёный
+  C_ACCENT2 = C565(120, 180, 255);  // голубой
+  C_TEXT    = C565(232, 238, 245);  // белый
+  C_MUTED   = C565(120, 132, 150);  // серый
+  C_WARN    = C565(255, 96, 96);    // красный
+  C_OK      = C565(80, 220, 120);   // зелёный
 }
 
 // ---------------------------------------------------------------------
@@ -354,7 +362,7 @@ void drawMenuTile(int i, bool sel) {
   int x = 8 + col * (tw + gx);
   int y = 30 + row * (th + gy);
   uint16_t border = sel ? C_ACCENT : C_PANEL;
-  uint16_t fill   = sel ? gfx->color565(30, 46, 40) : C_PANEL;
+  uint16_t fill   = sel ? C565(30, 46, 40) : C_PANEL;
   gfx->fillRoundRect(x, y, tw, th, 8, fill);
   gfx->drawRoundRect(x, y, tw, th, 8, border);
   drawIcon(menu[i].icon, x + tw / 2, y + 20, sel ? C_ACCENT : C_TEXT);
@@ -605,7 +613,7 @@ void screenLed() {
     uint8_t r, g, b; hsv2rgb(ledHue, r, g, b);
     apaShow(r, g, b, 20);
     gfx->fillRect(0, 28, SCR_W, SCR_H - 44, C_BG);
-    gfx->fillRoundRect(90, 45, 140, 60, 10, gfx->color565(r, g, b));
+    gfx->fillRoundRect(90, 45, 140, 60, 10, C565(r, g, b));
     char t[24]; snprintf(t, sizeof(t), "R%d G%d B%d", r, g, b);
     textAt(95, 115, t, C_TEXT, 1);
   }
@@ -616,7 +624,7 @@ void screenLed() {
 // =====================================================================
 void screenLight() {
   if (screenEntered) {
-    gfx->fillScreen(gfx->color565(255, 255, 255));
+    gfx->fillScreen(C565(255, 255, 255));
     apaShow(255, 255, 255, 31);
     backlightSet(255);
     screenEntered = false;
@@ -655,7 +663,7 @@ void screenSettings() {
 void splash() {
   gfx->fillScreen(C_BG);
   for (int r = 8; r <= 44; r += 6)
-    gfx->drawCircle(SCR_W / 2, 70, r, gfx->color565(20 + r, 120 + r, 60 + r / 2));
+    gfx->drawCircle(SCR_W / 2, 70, r, C565(20 + r, 120 + r, 60 + r / 2));
   gfx->fillCircle(SCR_W / 2, 70, 6, C_ACCENT);
   textAt(SCR_W / 2 - 78, 130, "T - E M B E D   L A B", C_TEXT, 2);
   for (int i = 0; i <= 255; i += 15) { backlightSet(i); delay(20); }
